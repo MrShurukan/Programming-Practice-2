@@ -8,7 +8,7 @@ void def() {
 
 voidptr pickTask(int number) {
     switch (number) {
-        case 1: return task1;
+        case 31: return task31;
 
         default:
             return def;

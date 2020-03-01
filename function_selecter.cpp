@@ -3,7 +3,7 @@
 #include "tasks.h"
 
 void def() {
-    std::cout << "Ð­Ñ‚Ð¾Ñ‚ Ñ‚Ð°ÑÐº ÐµÑ‰Ñ‘ Ð½Ðµ Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»Ñ‘Ð½.\n";   
+    std::cout << "Ýòîò òàñê åù¸ íå îïðåäåë¸í.\n";
 }
 
 voidptr pickTask(int number) {

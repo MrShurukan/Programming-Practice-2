@@ -6,7 +6,7 @@ int main() {
 
     int taskN = -1;
     while (true) {
-        std::cout << "ĞĞ¾Ğ¼ĞµÑ€ Ğ·Ğ°Ğ´Ğ°Ğ½Ğ¸Ñ: ";
+        std::cout << "Íîìåğ çàäàíèÿ: ";
         std::cin >> taskN;
 
         if (taskN <= 0) break;

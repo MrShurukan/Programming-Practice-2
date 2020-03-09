@@ -43,16 +43,16 @@ void printMaze(int X, int Y) {
     std::cout << "\n\n";
 }
 
-enum StepDirection {
+/*enum StepDirection {
     UP,
     RIGHT,
     DOWN,
     LEFT,
     START
-};
+};*/
 
 bool atLeastOneExit = false;
-void step(int x, int y, StepDirection dir) {
+void step(int x, int y) {
     if (x < 0 || y < 0 ||
         x >= HSIZE || y >= 25 ||
         maze[y][x] == '#')
@@ -71,11 +71,13 @@ void step(int x, int y, StepDirection dir) {
         atLeastOneExit = true;
     }
 
+    maze[y][x] = '#';
+
     // Двигаемся дальше, только если не пришли из этой клетки
-    if (dir != LEFT) step(x+1, y, RIGHT);
-    if (dir != RIGHT) step(x-1, y, LEFT);
-    if (dir != DOWN) step(x, y+1, UP);
-    if (dir != UP) step(x, y-1, DOWN);
+    step(x+1, y);
+    step(x-1, y);
+    step(x, y+1);
+    step(x, y-1);
 }
 
 void task31() {
@@ -90,84 +92,73 @@ void task31() {
         return;
     }
 
-    step(x, y, START);
+    step(x, y);
     if (!atLeastOneExit) std::cout << "Выхода нет";
 
     std::cout << '\n';
 }
 
+
+
+
+
+
+
+
 /**** Task 32 ****/
 #include <stack>
 #include <map>
 #include <sstream>
+#include <vector>
 
 enum Priority {
+    LOWEST,
     LOW,
     MEDIUM,
     HIGH,
-    HIGHEST,
 };
 
 std::map<char, Priority> priority {
-    {'(', HIGHEST},
-    {')', HIGHEST},
     {'^', HIGH},
     {'*', MEDIUM},
     {'/', MEDIUM},
     {'+', LOW},
     {'-', LOW},
+    {'(', LOWEST},
+    {')', LOWEST},
 };
 
 bool isNumber(char c) {
-    return (c >= '0' && c <= '9');
+    return (c >= '0' && c <= '9') || (c == '.');
 }
 
 void task32() {
     std::stack<char> stack;
+    std::string input, output;
 
-    std::string s;
-    while (std::cin >> s) {
-        if (s == ";") {
-            while (!stack.empty()) {
-                std::cout << stack.top() << " ";
+    std::getline(std::cin, input);
+    input += " ";
+
+    bool isReadingNumber = false;
+    std::string number;
+    for (std::size_t i = 0; i < input.length(); i++) {
+        char c = input[i];
+
+        if (isNumber(c)) {
+            output += c;
+        }
+        else if (c == '(') stack.push(c);
+        else if (c == ')') {
+            while (stack.top() != '(') {
+                output += stack.top();
                 stack.pop();
             }
-
-            break;
         }
-
-        // Какое-то число
-        if (s.length() > 1 || isNumber(s[0])) {
-            std::cout << s << " ";
-        }
-        // Оператор
+        else if (c == ' ')
+            continue;
+        // Операция
         else {
-            char c = s[0];
 
-            // Если стек пуст
-            if (stack.empty()) stack.push(c);
-            else if (priority[c] > priority[stack.top()]) {
-                // Если приоритет выше предыдущего оператора
-                if (c != ')') stack.push(c);
-                else {
-                    // Исключение в поведении для скобки
-                    while (!stack.empty() && stack.top() != '(') {
-                        std::cout << stack.top() << " ";
-                        stack.pop();
-                    }
-
-                    // Удаляем открывающую скобку
-                    stack.pop();
-                }
-            }
-            else {
-                // Если приоритет равен или ниже
-                std::cout << stack.top() << " ";
-                stack.pop();
-
-                stack.push(c);
-            }
         }
     }
-    std::cout << '\n';
 }

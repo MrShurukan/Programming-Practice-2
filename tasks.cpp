@@ -98,18 +98,13 @@ void task31() {
     std::cout << '\n';
 }
 
-
-
-
-
-
-
-
 /**** Task 32 ****/
 #include <stack>
 #include <map>
 #include <sstream>
 #include <vector>
+#include <cstring>
+#include <math.h>
 
 enum Priority {
     LOWEST,
@@ -132,33 +127,133 @@ bool isNumber(char c) {
     return (c >= '0' && c <= '9') || (c == '.');
 }
 
-void task32() {
+std::string convertToRPN(std::string input) {
     std::stack<char> stack;
-    std::string input, output;
+    std::string output;
 
-    std::getline(std::cin, input);
-    input += " ";
+    // Преобразуем в Си строку, чтобы можно было воспользоваться strtok
+    char* inputCStr = new char[input.length()];
+    strcpy(inputCStr, input.c_str());
 
-    bool isReadingNumber = false;
-    std::string number;
-    for (std::size_t i = 0; i < input.length(); i++) {
-        char c = input[i];
+    // Используем strtok, чтобы разделить строку на лексемы
+    char* lexem = strtok(inputCStr, " ");
+    while (lexem != nullptr) {
+        char c = lexem[0];
 
+        // Если первый символ - это цифра, то вся лексема - число
         if (isNumber(c)) {
-            output += c;
+            output += lexem;
+            output += " ";
         }
-        else if (c == '(') stack.push(c);
+        else if (c == '(') {
+            stack.push(c);
+        }
         else if (c == ')') {
-            while (stack.top() != '(') {
+            while (!stack.empty() && stack.top() != '(') {
                 output += stack.top();
+                output += " ";
                 stack.pop();
             }
-        }
-        else if (c == ' ')
-            continue;
-        // Операция
-        else {
 
+            // Выталкиваем саму скобку из стека
+            stack.pop();
         }
+        // Операция
+        else if (c != ' ') {
+
+            if (!stack.empty()) {
+                // Пока операция на стеке приоритетнее ИЛИ
+                // операция на вершине левоассоциативная и с приотитетом как у "с"
+                while (!stack.empty() &&
+                       (priority[stack.top()] > priority[c] || (stack.top() != '^' && priority[stack.top()] == priority[c]))) {
+                    output += stack.top();
+                    output += " ";
+                    stack.pop();
+                }
+            }
+
+            stack.push(c);
+        }
+
+        // Ищем следующую лексему
+        lexem = strtok(nullptr, " ");
     }
+
+    while (!stack.empty()) {
+        output += stack.top();
+        output += " ";
+        stack.pop();
+    }
+
+    delete[] inputCStr;
+    return output;
+}
+
+double calculateRPN(std::string input) {
+    std::stack<double> stack;
+
+    // Временно переводим локаль на дефолтную, чтобы разделителем была точка, а не запятая
+    setlocale(LC_ALL, "C");
+
+    // Преобразуем в Си строку, чтобы можно было воспользоваться strtok
+    char* inputCStr = new char[input.length()];
+    strcpy(inputCStr, input.c_str());
+
+    // Используем strtok, чтобы разделить строку на лексемы
+    char* lexem = strtok(inputCStr, " ");
+    while (lexem != nullptr) {
+        char c = lexem[0];
+
+        // Если первый символ - это цифра, то вся лексема - число
+        if (isNumber(c)) {
+            stack.push(atof(lexem));
+        }
+        // Оператор
+        else {
+            double firstOp, secondOp, result = 0;
+            secondOp = stack.top(); stack.pop();
+            firstOp = stack.top(); stack.pop();
+
+            switch (c) {
+            case '+':
+                result = firstOp + secondOp;
+                break;
+            case '-':
+                result = firstOp - secondOp;
+                break;
+            case '*':
+                result = firstOp * secondOp;
+                break;
+            case '/':
+                result = firstOp / secondOp;
+                break;
+            case '^':
+                result = pow(firstOp, secondOp);
+                break;
+            }
+
+            stack.push(result);
+        }
+
+        lexem = strtok(nullptr, " ");
+    }
+
+    delete[] inputCStr;
+    // Возвращаем локаль обратно
+    setlocale(LC_ALL, "Russian");
+
+    return stack.top();
+}
+
+void task32() {
+    // Сбрасываем прошлый ввод, чтобы getline сработал корректно
+    std::cin.ignore();
+
+    std::string input;
+    std::getline(std::cin, input);
+
+    std::string converted = convertToRPN(input);
+    std::cout << converted << '\n';
+
+    std::cout << calculateRPN(converted) << '\n' << '\n';
 }
